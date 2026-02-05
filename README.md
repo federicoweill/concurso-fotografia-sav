@@ -152,3 +152,6 @@ MIT
 ## Contacto
 
 Sociedad Argentina de Virología
+## Deploy Status
+- Último deploy: Thu Feb  5 18:09:59 -03 2026
+- Status: Listo para producción
