@@ -2,12 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { join } from 'path'
-import { unlink } from 'fs/promises'
+import { del } from '@vercel/blob'
 
-const UPLOAD_DIR = join(process.cwd(), 'public', 'uploads')
-
-// DELETE /api/admin/photos/[id] - Delete photo (admin only)
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -30,15 +26,9 @@ export async function DELETE(
       )
     }
 
-    // Delete local file
-    try {
-      await unlink(join(UPLOAD_DIR, photo.fileKey))
-    } catch (err) {
-      console.error('Error deleting file:', err)
-      // Continue even if file doesn't exist
-    }
+    // Delete from Vercel Blob
+    await del(photo.fileKey)
 
-    // Delete from database (votes will cascade)
     await prisma.photo.delete({
       where: { id: params.id },
     })

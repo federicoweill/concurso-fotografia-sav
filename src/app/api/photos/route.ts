@@ -2,18 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { writeFile, mkdir } from 'fs/promises'
-import { existsSync } from 'fs'
-import { join } from 'path'
-
-const UPLOAD_DIR = join(process.cwd(), 'public', 'uploads')
-
-// Ensure upload directory exists
-async function ensureUploadDir() {
-  if (!existsSync(UPLOAD_DIR)) {
-    await mkdir(UPLOAD_DIR, { recursive: true })
-  }
-}
+import { put, del } from '@vercel/blob'
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,7 +12,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    // Check contest phase
     const settings = await prisma.contestSettings.findFirst()
     if (settings && settings.phase !== 'REGISTRATION') {
       return NextResponse.json(
@@ -32,7 +20,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Check if user already has a photo
     const existingPhoto = await prisma.photo.findUnique({
       where: { contestantId: session.user.id },
     })
@@ -55,7 +42,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Validate file size (10MB)
     if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
         { error: 'El archivo debe ser menor a 10MB' },
@@ -63,7 +49,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Validate file type
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
       return NextResponse.json(
         { error: 'Solo se permiten archivos JPG, PNG o WebP' },
@@ -71,28 +56,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Save file locally
-    await ensureUploadDir()
-    
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    
-    // Create unique filename
-    const timestamp = Date.now()
-    const filename = `${session.user.id}_${timestamp}_${file.name}`
-    const filepath = join(UPLOAD_DIR, filename)
-    
-    await writeFile(filepath, buffer)
-    
-    // Create relative URL for the file
-    const fileUrl = `/uploads/${filename}`
+    // Upload to Vercel Blob
+    const blob = await put(`photos/${session.user.id}/${file.name}`, file, {
+      access: 'public',
+    })
 
-    // Save to database
     const photo = await prisma.photo.create({
       data: {
         title,
-        fileUrl,
-        fileKey: filename,
+        fileUrl: blob.url,
+        fileKey: blob.pathname,
         contestantId: session.user.id,
       },
     })
@@ -115,7 +88,6 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    // Check contest phase (only contestants can delete their own photos during registration)
     const settings = await prisma.contestSettings.findFirst()
     if (session.user.role === 'CONTESTANT' && settings && settings.phase !== 'REGISTRATION') {
       return NextResponse.json(
@@ -137,16 +109,9 @@ export async function DELETE(req: NextRequest) {
       )
     }
 
-    // Delete local file
-    try {
-      const { unlink } = await import('fs/promises')
-      await unlink(join(UPLOAD_DIR, photo.fileKey))
-    } catch (err) {
-      console.error('Error deleting file:', err)
-      // Continue even if file doesn't exist
-    }
+    // Delete from Vercel Blob
+    await del(photo.fileKey)
 
-    // Delete from database
     await prisma.photo.delete({
       where: { id: photo.id },
     })
