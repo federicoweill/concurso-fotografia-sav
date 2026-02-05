@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  password      String
+  role          String    // CONTESTANT, JUDGE, ADMIN
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Contestant specific
+  photo         Photo?
+  
+  // Judge specific
+  votes         Vote[]
+  
+  @@map("users")
+}
+
+model Photo {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  fileUrl       String
+  fileKey       String
+  uploadedAt    DateTime  @default(now())
+  
+  // Relations
+  contestantId  String    @unique
+  contestant    User      @relation(fields: [contestantId], references: [id], onDelete: Cascade)
+  
+  // Voting
+  votes         Vote[]
+  voteCount     Int       @default(0)
+  
+  @@map("photos")
+}
+
+model Vote {
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  judgeId       String
+  judge         User      @relation(fields: [judgeId], references: [id], onDelete: Cascade)
+  
+  photoId       String
+  photo         Photo     @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  
+  @@unique([judgeId, photoId])
+  @@map("votes")
+}
+
+model ContestSettings {
+  id                String   @id @default(cuid())
+  phase             String   @default("REGISTRATION") // REGISTRATION, JUDGING, RESULTS
+  registrationEnd   DateTime?
+  judgingEnd        DateTime?
+  maxFileSize       Int      @default(10485760) // 10MB in bytes
+  allowedFileTypes  String   @default("image/jpeg,image/png,image/webp")
+  updatedAt         DateTime @updatedAt
+  
+  @@map("contest_settings")
+}
