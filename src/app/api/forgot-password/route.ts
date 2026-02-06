@@ -58,13 +58,14 @@ export async function POST(req: NextRequest) {
     // Enviar email
     const emailResult = await sendPasswordResetEmail(user.email, resetUrl, user.name)
 
+    // Si el email falla (ej: dominio no verificado), devolver el enlace para uso manual
     if (!emailResult.success) {
-      console.error('Error sending reset email:', emailResult.error)
-      // No revelar el error al usuario por seguridad
-      return NextResponse.json(
-        { message: 'Si el email existe, recibirás un enlace para restablecer tu contraseña' },
-        { status: 200 }
-      )
+      console.log('Email failed, returning manual link for admin:', resetUrl)
+      return NextResponse.json({
+        message: 'Si el email existe, recibirás un enlace para restablecer tu contraseña',
+        debug: process.env.NODE_ENV === 'development' ? { resetUrl } : undefined,
+        manualLink: resetUrl, // Para que el admin pueda copiar y enviar manualmente
+      }, { status: 200 })
     }
 
     return NextResponse.json(

@@ -8,12 +8,14 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [manualLink, setManualLink] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
     setMessage('')
+    setManualLink('')
 
     try {
       const response = await fetch('/api/forgot-password', {
@@ -26,6 +28,9 @@ export default function ForgotPasswordPage() {
 
       if (response.ok) {
         setMessage(data.message)
+        if (data.manualLink) {
+          setManualLink(data.manualLink)
+        }
         setEmail('')
       } else {
         setError(data.error || 'Error al procesar la solicitud')
@@ -58,6 +63,24 @@ export default function ForgotPasswordPage() {
         {message && (
           <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
             {message}
+          </div>
+        )}
+
+        {manualLink && (
+          <div className="bg-yellow-50 border border-yellow-200 p-4 rounded">
+            <p className="text-sm text-yellow-800 mb-2">
+              <strong>Para administradores:</strong> El servicio de email no está configurado. 
+              Copiá este enlace y envialo manualmente al usuario:
+            </p>
+            <div className="bg-white p-2 rounded border break-all text-xs text-gray-600">
+              {manualLink}
+            </div>
+            <button
+              onClick={() => navigator.clipboard.writeText(manualLink)}
+              className="mt-2 w-full py-1 px-2 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600"
+            >
+              Copiar enlace
+            </button>
           </div>
         )}
 

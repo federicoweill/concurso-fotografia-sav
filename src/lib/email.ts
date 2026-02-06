@@ -10,7 +10,7 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string, us
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Concurso Fotografía SAV <noreply@concurso-fotografia-sav.vercel.app>',
+      from: 'Concurso Fotografía SAV <onboarding@resend.dev>',
       to: email,
       subject: 'Recuperación de contraseña - Concurso de Fotografía SAV',
       html: `
