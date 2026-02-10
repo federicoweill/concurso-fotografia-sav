@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { voteLimiter } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,16 +9,6 @@ export async function POST(req: NextRequest) {
 
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
-    // Rate limiting para votos
-    try {
-      await voteLimiter.consume(session.user.id)
-    } catch {
-      return NextResponse.json(
-        { error: 'Demasiados intentos de voto. Por favor, esperá un momento.' },
-        { status: 429 }
-      )
     }
 
     // Check contest phase
