@@ -12,7 +12,8 @@ model User {
   email         String    @unique
   name          String
   password      String
-  role          String    // CONTESTANT, JUDGE, ADMIN
+  dni           String?   // Para login con DNI en el futuro
+  role          String    // ADMIN, USER
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
@@ -43,13 +44,13 @@ model Vote {
   id            String    @id @default(cuid())
   createdAt     DateTime  @default(now())
   
-  judgeId       String
-  judge         User      @relation(fields: [judgeId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   photoId       String
   photo         Photo     @relation(fields: [photoId], references: [id], onDelete: Cascade)
   
-  @@unique([judgeId, photoId])
+  @@unique([userId, photoId])
   @@map("votes")
 }
 
@@ -63,14 +64,4 @@ model ContestSettings {
   updatedAt         DateTime @updatedAt
   
   @@map("contest_settings")
-}
-
-model PasswordResetToken {
-  id        String   @id @default(cuid())
-  email     String
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  
-  @@map("password_reset_tokens")
 }

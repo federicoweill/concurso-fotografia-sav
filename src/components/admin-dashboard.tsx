@@ -150,8 +150,7 @@ export function AdminDashboard({ users, photos, settings, results }: AdminDashbo
     }
   }
 
-  const contestants = users.filter(u => u.role === 'CONTESTANT')
-  const judges = users.filter(u => u.role === 'JUDGE')
+  const regularUsers = users.filter(u => u.role === 'USER')
   const admins = users.filter(u => u.role === 'ADMIN')
 
   return (
@@ -180,16 +179,16 @@ export function AdminDashboard({ users, photos, settings, results }: AdminDashbo
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white rounded-lg shadow p-4">
-              <p className="text-sm text-gray-600">Total Participantes</p>
-              <p className="text-2xl font-bold">{contestants.length}</p>
+              <p className="text-sm text-gray-600">Total Usuarios</p>
+              <p className="text-2xl font-bold">{regularUsers.length}</p>
             </div>
             <div className="bg-white rounded-lg shadow p-4">
               <p className="text-sm text-gray-600">Fotografías</p>
               <p className="text-2xl font-bold">{photos.length}</p>
             </div>
             <div className="bg-white rounded-lg shadow p-4">
-              <p className="text-sm text-gray-600">Jurados</p>
-              <p className="text-2xl font-bold">{judges.length}</p>
+              <p className="text-sm text-gray-600">Administradores</p>
+              <p className="text-2xl font-bold">{admins.length}</p>
             </div>
             <div className="bg-white rounded-lg shadow p-4">
               <p className="text-sm text-gray-600">Votos Emitidos</p>
@@ -247,7 +246,7 @@ export function AdminDashboard({ users, photos, settings, results }: AdminDashbo
                         onClick={() => setCreatingUser(true)}
                         className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                       >
-                        + Crear Usuario (Jurado/Admin)
+                        + Crear Usuario
                       </button>
                     </div>
                   )}
@@ -288,12 +287,11 @@ export function AdminDashboard({ users, photos, settings, results }: AdminDashbo
                           <label className="block text-sm font-medium text-gray-700">Rol</label>
                           <select
                             name="role"
-                            defaultValue="JUDGE"
+                            defaultValue="USER"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                           >
-                            <option value="JUDGE">Jurado</option>
+                            <option value="USER">Usuario</option>
                             <option value="ADMIN">Administrador</option>
-                            <option value="CONTESTANT">Participante</option>
                           </select>
                         </div>
                         <div className="flex space-x-2">
@@ -347,8 +345,7 @@ export function AdminDashboard({ users, photos, settings, results }: AdminDashbo
                             defaultValue={editingUser.role}
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           >
-                            <option value="CONTESTANT">Participante</option>
-                            <option value="JUDGE">Jurado</option>
+                            <option value="USER">Usuario</option>
                             <option value="ADMIN">Administrador</option>
                           </select>
                         </div>
@@ -404,11 +401,9 @@ export function AdminDashboard({ users, photos, settings, results }: AdminDashbo
                                 <span className={`px-2 py-1 text-xs rounded-full ${
                                   user.role === 'ADMIN' 
                                     ? 'bg-purple-100 text-purple-800'
-                                    : user.role === 'JUDGE'
-                                    ? 'bg-yellow-100 text-yellow-800'
                                     : 'bg-green-100 text-green-800'
                                 }`}>
-                                  {user.role === 'ADMIN' ? 'Admin' : user.role === 'JUDGE' ? 'Jurado' : 'Participante'}
+                                  {user.role === 'ADMIN' ? 'Admin' : 'Usuario'}
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">

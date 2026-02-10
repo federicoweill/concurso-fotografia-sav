@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session || session.user.role !== 'JUDGE') {
+    if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
@@ -33,9 +33,9 @@ export async function POST(req: NextRequest) {
 
     const { photoId } = await req.json()
 
-    // Check if judge already voted
+    // Check if user already voted
     const existingVote = await prisma.vote.findFirst({
-      where: { judgeId: session.user.id },
+      where: { userId: session.user.id },
     })
 
     if (existingVote) {
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     await prisma.$transaction(async (tx) => {
       await tx.vote.create({
         data: {
-          judgeId: session.user.id,
+          userId: session.user.id,
           photoId,
         },
       })
@@ -74,7 +74,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session || session.user.role !== 'JUDGE') {
+    if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
@@ -88,7 +88,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     const existingVote = await prisma.vote.findFirst({
-      where: { judgeId: session.user.id },
+      where: { userId: session.user.id },
     })
 
     if (!existingVote) {
