@@ -193,7 +193,7 @@ export function AdminDashboard({ users, photos, settings, results }: AdminDashbo
             <div className="bg-white rounded-lg shadow p-4">
               <p className="text-sm text-gray-600">Votos Emitidos</p>
               <p className="text-2xl font-bold">
-                {users.reduce((acc, u) => acc + u.votes.length, 0)}
+                {users.reduce((acc, u) => acc + (u.votes?.length || 0), 0)}
               </p>
             </div>
           </div>

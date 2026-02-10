@@ -20,8 +20,8 @@ export function UserDashboard({ user, photos, settings }: UserDashboardProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null)
   const [voting, setVoting] = useState(false)
 
-  const hasVoted = user.votes.length > 0
-  const votedPhotoId = hasVoted ? user.votes[0].photoId : null
+  const hasVoted = user?.votes?.length > 0
+  const votedPhotoId = hasVoted ? user.votes[0]?.photoId : null
 
   const canUpload = !settings || settings.phase === 'REGISTRATION'
   const canVote = settings?.phase === 'JUDGING'
